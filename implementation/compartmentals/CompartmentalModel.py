@@ -3,4 +3,4 @@ class CompartmentalModel:
         self.initialValues = initial_values
         self.transfer_rates = transfer_rates
         self.days = days
-        self.compartments = compartments if compartments else [f'C{i}' for i in range(len(initial_values))]
+        self.compartments = compartments #if compartments else [f'C{i}' for i in range(len(initial_values))]

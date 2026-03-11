@@ -85,7 +85,7 @@ if st.button("Rodar Simulação"):
     initial_conditions = [S, E, I, R, D]
     transfer_rates = [beta, sigma, gamma, alfa, mu]
 
-    fig = seirsd.solve(
+    fig = seirsd.run_simulation(
         days=days,
         initial_conditions=initial_conditions,
         transfer_rates=transfer_rates,
@@ -95,6 +95,12 @@ else:
     st.info("Configure os parâmetros e clique em **Rodar Simulação**.")
 
 st.subheader("Simular SEIRSD com variações em α")
+
+row1_col1, row1_col2 = st.columns(2)
+with row1_col1:
+    quantity_simulation = st.number_input("Simulações", value=1000, min_value=1, max_value=10000)
+with row1_col2:
+    confidence_level = st.number_input("Intervalo de confiança", value=0.1, min_value=0.01, max_value=1.0, help="Em decimal. Ex 0.1 para 95%")
 
 alfa_initial_values = [0, 0.0027, 0.0056, 0.0111, 0.0333, 0.0714, 1]
 if "alfa_values" not in st.session_state:
@@ -138,25 +144,20 @@ if st.button("Rodar Métricas"):
 
     st.markdown("### Cenário base")
 
-    results = {}
-
-    for alfa in alfa_values:
-        rates = (beta, sigma, gamma, alfa, mu)
-        sol = odeint(seirsd.odes, initial_conditions, timespan_days, args=(rates,))
-        S, E, I, R, D = sol.T
-        results[alfa] = {
-            "t": timespan_days,
-            "S": S,
-            "E": E,
-            "I": I,
-            "R": R,
-            "D": D,
-            "total_deaths": D[-1]
-        }
+    basic_scenarios_results = seirsd.run_alfa_metric_basic_scenario(
+        alfa_values=alfa_values,
+        beta=beta,
+        sigma=sigma,
+        gamma=gamma,
+        mu=mu,
+        days=days,
+        initial_conditions=initial_conditions,
+        timespan_days=timespan_days
+    )
 
     fig1 = go.Figure()
-
-    for alfa, data in results.items():
+    
+    for alfa, data in basic_scenarios_results.items():
         label = f"α = {alfa:.4f} por dia"
         fig1.add_trace(go.Scatter(
             x=data["t"], 
@@ -164,7 +165,7 @@ if st.button("Rodar Métricas"):
             mode='lines',
             name=label
         ))
-
+    
     fig1.update_layout(
         title="Impacto da perda de imunidade na mortalidade (Modelo SEIRSD)",
         xaxis_title="Tempo (dias)",
@@ -173,7 +174,7 @@ if st.button("Rodar Métricas"):
     )
 
     omegas_txt = [f"{w:.4f}" for w in alfa_values]
-    final_deaths = [results[w]["total_deaths"] for w in alfa_values]
+    final_deaths = [basic_scenarios_results[w]["total_deaths"] for w in alfa_values]
     fig2 = px.bar(
         x=omegas_txt,
         y=final_deaths,
@@ -188,57 +189,23 @@ if st.button("Rodar Métricas"):
         st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown("### Monte Carlo")
+    st.text(f"Com {quantity_simulation} simulações por valor de alfa")
 
-    def sample_truncnorm(mean, sd, lower, upper, size):
-        a, b = (lower - mean) / sd, (upper - mean) / sd
-        return truncnorm.rvs(a, b, loc=mean, scale=sd, size=size, random_state=42)
-
-    N_sim = 1000  # por valor de alfa
-
-    cv = 0.1
-    results = {}
-
-    for alfa in alfa_values:
-        D_curves = []
-        D_final = []
-        
-        sigma_samples = sample_truncnorm(sigma, sigma*cv, sigma*0.5, sigma*1.5, N_sim)
-        gamma_samples = sample_truncnorm(gamma, gamma*cv, gamma*0.5, gamma*1.5, N_sim)
-        mu_samples = sample_truncnorm(mu, mu*cv, mu*0.5, mu*1.5, N_sim)
-        beta_samples = sample_truncnorm(beta, beta*cv, beta*0.5, beta*1.5, N_sim)
-        
-        for i in range(N_sim):
-            sigma = sigma_samples[i]
-            gamma = gamma_samples[i]
-            mu = mu_samples[i]
-            beta = beta_samples[i]
-            rates = (beta, sigma, gamma, alfa, mu)
-
-            sol = odeint(seirsd.odes, initial_conditions, timespan_days, args=(rates, ))
-            D_t = sol[:, 4]
-            
-            D_curves.append(D_t)
-            D_final.append(D_t[-1])
-        
-        D_curves = np.array(D_curves)
-        D_final = np.array(D_final)
-        
-        mean_curve = np.mean(D_curves, axis=0)
-        low_curve = np.percentile(D_curves, 2.5, axis=0)
-        high_curve = np.percentile(D_curves, 97.5, axis=0)
-        
-        results[alfa] = {
-            "mean": mean_curve,
-            "low": low_curve,
-            "high": high_curve,
-            "final_mean": np.mean(D_final),
-            "final_low": np.percentile(D_final, 2.5),
-            "final_high": np.percentile(D_final, 97.5)
-        }
+    monte_carlo_results = seirsd.run_alfa_metric_monte_carlo(
+        alfa_values=alfa_values,
+        beta=beta,
+        sigma=sigma,
+        gamma=gamma,
+        mu=mu,
+        days=days,
+        initial_conditions=initial_conditions,
+        N_sim=quantity_simulation,
+        cv=confidence_level
+    )
 
     fig1 = go.Figure()
     for alfa in alfa_values:
-        res = results[alfa]
+        res = monte_carlo_results[alfa]
         fig1.add_trace(go.Scatter(
             x=timespan_days, y=res["mean"],
             mode='lines',
@@ -263,9 +230,9 @@ if st.button("Rodar Métricas"):
 
     fig2 = go.Figure()
     alfas_txt = [f"{a:.4f}" for a in alfa_values]
-    final_means = [results[a]["final_mean"] for a in alfa_values]
-    final_lows = [results[a]["final_low"] for a in alfa_values]
-    final_highs = [results[a]["final_high"] for a in alfa_values]
+    final_means = [monte_carlo_results[a]["final_mean"] for a in alfa_values]
+    final_lows = [monte_carlo_results[a]["final_low"] for a in alfa_values]
+    final_highs = [monte_carlo_results[a]["final_high"] for a in alfa_values]
 
     fig2.add_trace(go.Bar(
         x=alfas_txt, y=final_means,
@@ -275,7 +242,7 @@ if st.button("Rodar Métricas"):
     ))
 
     fig2.update_layout(
-        title="Mortalidade final por taxa de perda de imunidade (IC 95%)",
+        title=f"Mortalidade final por taxa de perda de imunidade (IC {int((1 - (confidence_level / 2)) * 100)}%)",
         xaxis_title="Taxa de perda de imunidade α (por dia)",
         yaxis_title="Mortos acumulados ao final (1 ano)",
         template="plotly_white"
