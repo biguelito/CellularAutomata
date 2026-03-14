@@ -12,7 +12,7 @@ class SEIRSD:
         "beta": 0.4332,
         "sigma": 0.192,
         "gamma": 0.141,
-        "alfa": 0.0056,
+        "alfa": 0.3,
         "mu": 0.0014,
         "r0": 3,
         "days": 365
