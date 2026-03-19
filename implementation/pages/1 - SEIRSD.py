@@ -1,10 +1,13 @@
 import streamlit as st
-from models.seirsd import SEIRSD
 import numpy as np
 from scipy.integrate import odeint
 import plotly.graph_objects as go
 import plotly.express as px
 from scipy.stats import truncnorm
+
+from models.seirsd import SEIRSD
+from cellular_automata.condition import Condition
+from cellular_automata.automata import Automata
 
 seirsd = SEIRSD()
 
@@ -50,7 +53,7 @@ days = st.number_input("Dias", value=int(seirsd.get_initial_metrics("ticks")), m
 row1_col1, row1_col2, row1_col3 = st.columns(3)
 row2_col1, row2_col2 = st.columns(2)
 with row1_col1:
-    S = st.number_input("Susceptíveis (S)", value=int(seirsd.get_initial_metrics("S")), min_value=0)
+    S = st.number_input("Susceptíveis (S)", value=int(seirsd.get_initial_metrics("S")), min_value=0, disabled=True)
 with row1_col2:
     E = st.number_input("Expostos (E)", value=int(seirsd.get_initial_metrics("E")), min_value=0)
 with row1_col3:
@@ -256,3 +259,37 @@ if st.button("Rodar Métricas"):
 
 else:
     st.info("Configure os parâmetros e clique em **Rodar Métricas**.")
+
+st.subheader("Simular SEIRSD  visual")
+
+if st.button("Criar simulação visual"):
+    beta = beta if use_beta else r0 * (gamma + mu)
+
+    seirsd = SEIRSD()
+    seirsd.update_metrics(
+        {
+            "S": S,
+            "E": E,
+            "I": I,
+            "R": R,
+            "D": D,
+            "beta": beta,
+            "sigma": sigma,
+            "gamma": gamma,
+            "alfa": alfa,
+            "mu": mu,
+            "ticks": days
+        }
+    )
+
+    size = 100
+    initial_conditions = {
+        Condition.EXPOSED: E,
+        Condition.INFECTED: I
+    }
+
+    automata = Automata(size, seirsd, initial_conditions)
+    visual_simulation = automata.run(interface="streamlit")
+    st.plotly_chart(visual_simulation)
+else:
+    st.info("Rodar a simulação visual")

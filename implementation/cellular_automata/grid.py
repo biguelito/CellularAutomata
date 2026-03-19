@@ -80,12 +80,19 @@ class Grid:
 
         return frames
 
-    def __init__(self, interface, matrices_per_tick, statistics_per_tick, statistics_max, sleep_between_tick=1):
+    def show(self, interface):
+        if self.fig == None:
+            return
+        
+        self.fig.show(renderer=interface)
+
+    def __init__(self, matrices_per_tick, statistics_per_tick, statistics_max, sleep_between_tick=1):
         self.matrices_per_tick = matrices_per_tick
         self.statistics_per_tick = statistics_per_tick
         self.statistics_max = statistics_max
         self.size = len(self.matrices_per_tick[0])
         self.sleep_between_tick = sleep_between_tick
+        self.fig = None
 
         self.colorscale = [
             [0.00, '#2ecc71'], [0.20, '#2ecc71'],
@@ -114,4 +121,5 @@ class Grid:
             margin=dict(l=20, r=20, t=100, b=80),
         )
 
-        fig.show(renderer=interface)
+        self.fig = fig
+        return

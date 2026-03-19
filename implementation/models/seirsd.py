@@ -5,7 +5,7 @@ import numpy as np
 class SEIRSD:
     COMPARTMENTS = ["Susceptíveis", "Expostos", "Infectados", "Recuperados", "Mortos"]
     INITIAL_METRICS = {
-        "S": 999985,
+        "S": 9985,
         "E": 10,
         "I": 5,
         "R": 0,
@@ -13,10 +13,11 @@ class SEIRSD:
         "beta": 0.4332,
         "sigma": 0.192,
         "gamma": 0.141,
-        "alfa": 0.0056,
+        "alfa": 0.03,
         "mu": 0.0014,
         "r0": 3,
-        "ticks": 365
+        "ticks": 365,
+        "size": 100
     }
 
     def __init__(self):

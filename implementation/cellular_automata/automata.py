@@ -9,10 +9,9 @@ from cellular_automata.grid import Grid
 from models.seirsd import SEIRSD
 
 class Automata:
-    def __init__(self, size : int, seirsd : SEIRSD, initial_conditions: dict, interface : str='browser'):
+    def __init__(self, size : int, seirsd : SEIRSD, initial_conditions: dict):
         self.size = size
         self.seirsd = seirsd
-        self.interface = interface
         self.initial_conditions = initial_conditions
 
         self.beta = self.seirsd.get_initial_metrics("beta")
@@ -154,8 +153,7 @@ class Automata:
         print(f'ticks: {self.tick_count}')
         print("\033c", end="")
 
-    
-    def interface_interation(self, interface, ticks, sleep_between_tick):
+    def create_interation(self, ticks):
         all_matrices = []
         stats_per_tick = []
         stats_max = []
@@ -165,20 +163,27 @@ class Automata:
 
         for _ in range(ticks):
             self.tick()
-            self.track_progress()
             all_matrices.append(self.convert_char_to_int())
             stats_per_tick.append(dict(self.statistic.conditions_in_tick))
             stats_max.append(dict(self.statistic.conditions_max))
 
-        print('criando interface')
-        Grid(interface, all_matrices, stats_per_tick, stats_max, sleep_between_tick)
+        return all_matrices, stats_per_tick, stats_max
+
+    def create_interface(self, ticks, sleep_between_tick):
+        all_matrices, stats_per_tick, stats_max = self.create_interation(ticks)
+        return Grid(all_matrices, stats_per_tick, stats_max, sleep_between_tick)
+        
 
     def run(self, interface='browser', ticks=0, sleep_between_tick=1):
         if (ticks == 0):
             ticks = self.seirsd.get_initial_metrics('ticks')
         
-        if (self.interface == 'terminal'):
-                self.terminal_interation(ticks, sleep_between_tick)
-                return
-
-        self.interface_interation(interface, ticks, sleep_between_tick)
+        if (interface == 'terminal'):
+            self.terminal_interation(ticks, sleep_between_tick)
+            return None
+        
+        grid = self.create_interface(ticks, sleep_between_tick)
+        if (interface == 'streamlit'):
+            return grid.fig
+        
+        grid.show(interface)

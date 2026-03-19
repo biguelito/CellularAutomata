@@ -5,7 +5,7 @@ from models.seirsd import SEIRSD
 seirsd = SEIRSD()
 seirsd.update_metrics(
     {
-        'alfa': 0.1,
+        'alfa': 0.03,
         'ticks': 365
     }
 )
