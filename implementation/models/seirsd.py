@@ -3,7 +3,8 @@ from scipy.stats import truncnorm
 import numpy as np
 
 class SEIRSD:
-    DEFAULTS = {
+    COMPARTMENTS = ["Susceptíveis", "Expostos", "Infectados", "Recuperados", "Mortos"]
+    INITIAL_METRICS = {
         "S": 999985,
         "E": 10,
         "I": 5,
@@ -15,15 +16,23 @@ class SEIRSD:
         "alfa": 0.0056,
         "mu": 0.0014,
         "r0": 3,
-        "days": 365
+        "ticks": 365
     }
-    COMPARTMENTS = ["Susceptíveis", "Expostos", "Infectados", "Recuperados", "Mortos"]
 
     def __init__(self):
         pass
 
-    def get_default(self, key):
-        return self.DEFAULTS[key]
+    def get_initial_metrics(self, key):
+        return self.INITIAL_METRICS[key]
+
+    def set_initial_metrics(self, key, value):
+        self.INITIAL_METRICS[key] = value
+
+    def update_metrics(self, new_metrics : dict):
+        for key, value in new_metrics.items():
+            if key not in new_metrics.keys():
+                continue
+            self.set_initial_metrics(key, value)    
 
     def sample_truncnorm(self, mean, sd, lower, upper, size):
         a, b = (lower - mean) / sd, (upper - mean) / sd

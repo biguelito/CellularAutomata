@@ -46,19 +46,19 @@ with st.expander("Mostrar Modelo SEIRSD"):
 
 st.title("Parametrização da População Inicial")
 
-days = st.number_input("Dias", value=int(seirsd.get_default("days")), min_value=0)
+days = st.number_input("Dias", value=int(seirsd.get_initial_metrics("ticks")), min_value=0)
 row1_col1, row1_col2, row1_col3 = st.columns(3)
 row2_col1, row2_col2 = st.columns(2)
 with row1_col1:
-    S = st.number_input("Susceptíveis (S)", value=int(seirsd.get_default("S")), min_value=0)
+    S = st.number_input("Susceptíveis (S)", value=int(seirsd.get_initial_metrics("S")), min_value=0)
 with row1_col2:
-    E = st.number_input("Expostos (E)", value=int(seirsd.get_default("E")), min_value=0)
+    E = st.number_input("Expostos (E)", value=int(seirsd.get_initial_metrics("E")), min_value=0)
 with row1_col3:
-    I = st.number_input("Infectados (I)", value=int(seirsd.get_default("I")), min_value=0)
+    I = st.number_input("Infectados (I)", value=int(seirsd.get_initial_metrics("I")), min_value=0)
 with row2_col1:
-    R = st.number_input("Recuperados (R)", value=int(seirsd.get_default("R")), min_value=0)
+    R = st.number_input("Recuperados (R)", value=int(seirsd.get_initial_metrics("R")), min_value=0)
 with row2_col2:
-    D = st.number_input("Mortos (D)", value=int(seirsd.get_default("D")), min_value=0)
+    D = st.number_input("Mortos (D)", value=int(seirsd.get_initial_metrics("D")), min_value=0)
 
 st.title("Simular SEIRSD")
 
@@ -68,17 +68,17 @@ row1_col1, row1_col2, row1_col3 = st.columns(3)
 row2_col1, row2_col2 = st.columns(2)
 with row1_col1:
     if use_beta:
-        beta = st.number_input("β (beta) - Transmissão", value=float(seirsd.get_default("beta")), min_value=0.0, step=0.0001, format="%.4f")
+        beta = st.number_input("β (beta) - Transmissão", value=float(seirsd.get_initial_metrics("beta")), min_value=0.0, step=0.0001, format="%.4f")
     else:   
-        r0 = st.number_input("R0", value=float(seirsd.get_default("r0")), min_value=0.0, step=0.0001, format="%.4f")
+        r0 = st.number_input("R0", value=float(seirsd.get_initial_metrics("r0")), min_value=0.0, step=0.0001, format="%.4f")
 with row1_col2:
-    sigma = st.number_input("σ (sigma) - Incubação", value=float(seirsd.get_default("sigma")), min_value=0.0, step=0.0001, format="%.4f")
+    sigma = st.number_input("σ (sigma) - Incubação", value=float(seirsd.get_initial_metrics("sigma")), min_value=0.0, step=0.0001, format="%.4f")
 with row1_col3:
-    gamma = st.number_input("γ (gamma) - Recuperação", value=float(seirsd.get_default("gamma")), min_value=0.0, step=0.0001, format="%.4f")
+    gamma = st.number_input("γ (gamma) - Recuperação", value=float(seirsd.get_initial_metrics("gamma")), min_value=0.0, step=0.0001, format="%.4f")
 with row2_col1:
-    alfa = st.number_input("α (alfa) - Perda de imunidade", value=float(seirsd.get_default("alfa")), min_value=0.0, step=0.0001, format="%.4f")
+    alfa = st.number_input("α (alfa) - Perda de imunidade", value=float(seirsd.get_initial_metrics("alfa")), min_value=0.0, step=0.0001, format="%.4f")
 with row2_col2:
-    mu = st.number_input("μ (mu) - Mortalidade", value=float(seirsd.get_default("mu")), min_value=0.0, step=0.0001, format="%.4f")
+    mu = st.number_input("μ (mu) - Mortalidade", value=float(seirsd.get_initial_metrics("mu")), min_value=0.0, step=0.0001, format="%.4f")
 
 if st.button("Rodar Simulação"):
     beta = beta if use_beta else r0 * (gamma + mu)
