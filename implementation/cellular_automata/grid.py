@@ -1,133 +1,117 @@
-import numpy as np
-from math import ceil
-from time import sleep
+import plotly.graph_objects as go
 
 from cellular_automata.condition import Condition
-from cellular_automata.statistic import Statistic
-from cellular_automata.cell import Cell
-from models.seirsd import SEIRSD
 
 class Grid:
-    def __init__(self, size : int, seirsd : SEIRSD):
-        self.size = size
-        self.seirsd = seirsd
+    def make_title(self, tick_idx):
+        stats_tick = self.statistics_per_tick[tick_idx]
+        stats_max = self.statistics_max[tick_idx]
+        stats_line = (
+            f"S: [{stats_tick[Condition.SUSCEPTIBLE]} - {stats_max[Condition.SUSCEPTIBLE]}]  "
+            f"E: [{stats_tick[Condition.EXPOSED]} - {stats_max[Condition.EXPOSED]}]  "
+            f"I: [{stats_tick[Condition.INFECTED]} - {stats_max[Condition.INFECTED]}]  "
+            f"R: [{stats_tick[Condition.RECOVERED]} - {stats_max[Condition.RECOVERED]}]  "
+            f"D: [{stats_tick[Condition.DEAD]} - {stats_max[Condition.DEAD]}]"
+        )
+        return f"Simulação SEIRSD - {self.size}*{self.size} indivíduos<br><sub>{stats_line}</sub>"
 
-        self.beta = self.seirsd.get_initial_metrics("beta")
-        self.sigma  = self.seirsd.get_initial_metrics("sigma")
-        self.gamma = self.seirsd.get_initial_metrics("gamma")
-        self.alfa = self.seirsd.get_initial_metrics("alfa")
-        self.mu = self.seirsd.get_initial_metrics("mu")
-        self.days_to_infection = ceil(1/self.sigma)
-        self.days_to_lose_immunity = ceil(1/self.alfa)
-        self.days_to_recover = ceil(1/self.gamma)
+    def create_menu(self):
+        return [
+            dict(
+                type='buttons',
+                showactive=False,
+                y=1.05, x=0.0,
+                xanchor='left', yanchor='top',
+                buttons=[
+                    dict(
+                        label='Play',
+                        method='animate',
+                        args=[None, dict(
+                            frame=dict(duration=self.sleep_between_tick*100, redraw=True),
+                            fromcurrent=True,
+                            transition=dict(duration=0),
+                        )],
+                    ),
+                    dict(
+                        label='Pause',
+                        method='animate',
+                        args=[[None], dict(
+                            frame=dict(duration=0, redraw=False),
+                            mode='immediate',
+                            transition=dict(duration=0),
+                        )],
+                    ),
+                ],
+            )
+        ]
+    
+    def create_slider(self):
+        return [
+            dict(
+                active=0,
+                steps=[dict(
+                    method='animate',
+                    args=[[str(idx)], dict(
+                        mode='immediate',
+                        frame=dict(duration=0, redraw=True),
+                        transition=dict(duration=0),
+                    )],
+                    label=str(idx),
+                ) for idx in range(len(self.matrices_per_tick))],
+                currentvalue=dict(prefix='Tick: ', visible=True, xanchor='center'),
+                transition=dict(duration=0),
+            )
+        ]
+    
+    def create_frames(self):
+        frames = []
+        for idx in range(len(self.matrices_per_tick)):
+            frames.append(go.Frame(
+                data=[go.Heatmap(
+                    z=self.matrices_per_tick[idx].tolist(),
+                    colorscale=self.colorscale,
+                    zmin=0,
+                    zmax=4,
+                    showscale=False,
+                )],
+                layout=go.Layout(title=dict(text=self.make_title(idx))),
+                name=str(idx),
+            ))
 
-        self.conditions_effect = {
-            Condition.SUSCEPTIBLE: self.susceptible_cell,
-            Condition.EXPOSED: self.exposed_cell,
-            Condition.INFECTED: self.infected_cell,
-            Condition.RECOVERED: self.recovered_cell
-        }
+        return frames
 
-        self.statistic = Statistic()        
-        self.tick_count = 0
-        self.cell = None
+    def __init__(self, interface, matrices_per_tick, statistics_per_tick, statistics_max, sleep_between_tick=1):
+        self.matrices_per_tick = matrices_per_tick
+        self.statistics_per_tick = statistics_per_tick
+        self.statistics_max = statistics_max
+        self.size = len(self.matrices_per_tick[0])
+        self.sleep_between_tick = sleep_between_tick
 
-        self.create_population()
-        return
+        self.colorscale = [
+            [0.00, '#2ecc71'], [0.20, '#2ecc71'],
+            [0.20, '#f1c40f'], [0.40, '#f1c40f'],
+            [0.40, '#e74c3c'], [0.60, '#e74c3c'],
+            [0.60, '#ffffff'], [0.80, '#ffffff'],
+            [0.80, '#111111'], [1.00, '#111111'],
+        ]
+    
+        fig = go.Figure(data=[go.Heatmap(
+            z=self.matrices_per_tick[0].tolist(),
+            colorscale=self.colorscale,
+            zmin=0,
+            zmax=4,
+            showscale=False,
+        )])
 
-    def create_population(self):
-        self.grid = [[Cell() for j in range(self.size)] for i in range(self.size)]
-        self.grid = np.array(self.grid, dtype=object)
-        self.statistic.increase_count(Condition.SUSCEPTIBLE, self.size * self.size)
-        return
+        fig.frames = self.create_frames()
 
-    def print_grid(self):
-        for i in range(self.size):
-            for j in range(self.size):
-                cell = self.grid[i][j]
-                print(cell, end=' ')
-            print()
-        print()
-        return
+        fig.update_layout(
+            title=dict(text=self.make_title(0), x=0.5, xanchor='center'),
+            updatemenus=self.create_menu(),
+            sliders=self.create_slider(),
+            xaxis=dict(showticklabels=False, showgrid=False),
+            yaxis=dict(showticklabels=False, showgrid=False, scaleanchor='x'),
+            margin=dict(l=20, r=20, t=100, b=80),
+        )
 
-    def initialize_random_condition(self, quantity, condition):
-        total_susceptibles = self.grid.size
-        flat_indices = np.random.choice(total_susceptibles, quantity, replace=False)
-        indices = np.unravel_index(flat_indices, (len(self.grid), len(self.grid)))
-        for row, column in zip(indices[0], indices[1]):
-            self.grid[row, column].set_condition(condition)
-        self.statistic.update_count(Condition.SUSCEPTIBLE, condition, -quantity, quantity)
-        self.statistic.decrease_max_susceptible(quantity)
-        return
-
-    def susceptible_cell(self, i, j):
-        infected_neighbors = 0
-        for x in range(max(0, i - 1), min(self.size, i + 2)):
-            for y in range(max(0, j - 1), min(self.size, j + 2)):
-                if self.grid[x, y].get_condition() == Condition.INFECTED:
-                    infected_neighbors += 1
-
-        if infected_neighbors > 0:
-            prob_infection = 1 - ((1 - self.beta)**infected_neighbors)
-            if (np.random.rand() < prob_infection):
-                self.cell.set_condition(Condition.EXPOSED)
-        return
-
-    def exposed_cell(self, i=0, j=0):
-        self.cell.increase_days_exposed()
-        if (self.cell.days_exposed == self.days_to_infection):
-            self.cell.set_condition(Condition.INFECTED)
-        return
-
-    def infected_cell(self, i=0, j=0):
-        self.cell.increase_days_infected()
-        prob_die = self.mu
-        if (np.random.rand() < prob_die):
-            self.cell.set_condition(Condition.DEAD)
-            return
-        
-        if (self.cell.days_infected == self.days_to_recover):
-            self.cell.set_condition(Condition.RECOVERED)
-        return
-
-    def recovered_cell(self, i=0, j=0):
-        self.cell.increase_days_recovered()
-        if (self.cell.days_recovered == self.days_to_lose_immunity):
-            self.cell.set_condition(Condition.SUSCEPTIBLE)
-        return
-
-    def progress_condition(self, i, j):
-        condition_old = self.cell.get_condition()
-        if (condition_old == Condition.DEAD):
-            return
-
-        self.conditions_effect[condition_old](i, j)
-        condition_new = self.cell.get_condition()
-        if (condition_old != condition_new):
-            self.statistic.update_count(condition_old, condition_new)
-        return
-
-    def tick(self):
-        self.tick_count += 1
-        for i in range(self.size):
-            for j in range(self.size):
-                self.cell = self.grid[i, j]
-                self.progress_condition(i, j)
-        return
-        
-    def interation(self):
-        self.tick()
-        print(f'tick: {self.tick_count}')
-        self.print_grid()
-        self.statistic.print_statistics()
-        return
-
-    def loop_interation(self, ticks=0, sleep_between_tick=3):
-        if (ticks == 0):
-            ticks = self.seirsd.get_initial_metrics('ticks')
-
-        for i in range(ticks):
-            print("\033c", end="")
-            self.interation()
-            sleep(sleep_between_tick)
-        return
+        fig.show(renderer=interface)
