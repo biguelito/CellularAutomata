@@ -1,18 +1,12 @@
 import plotly.graph_objects as go
 
-from cellular_automata.condition import Condition
-
 class Grid:
     def make_title(self, tick_idx):
         stats_tick = self.statistics_per_tick[tick_idx]
         stats_max = self.statistics_max[tick_idx]
-        stats_line = (
-            f"S: [{stats_tick[Condition.SUSCEPTIBLE]} - {stats_max[Condition.SUSCEPTIBLE]}]  "
-            f"E: [{stats_tick[Condition.EXPOSED]} - {stats_max[Condition.EXPOSED]}]  "
-            f"I: [{stats_tick[Condition.INFECTED]} - {stats_max[Condition.INFECTED]}]  "
-            f"R: [{stats_tick[Condition.RECOVERED]} - {stats_max[Condition.RECOVERED]}]  "
-            f"D: [{stats_tick[Condition.DEAD]} - {stats_max[Condition.DEAD]}]"
-        )
+        stats_line = ""
+        for i in range(self.quant_condition):
+            stats_line += f"{i}: [{stats_tick[i]} - {stats_max[i]}]  "
         return f"Simulação SEIRSD - {self.size}*{self.size} indivíduos<br><sub>{stats_line}</sub>"
 
     def create_menu(self):
@@ -86,13 +80,14 @@ class Grid:
         
         self.fig.show(renderer=interface)
 
-    def __init__(self, matrices_per_tick, statistics_per_tick, statistics_max, sleep_between_tick=1):
+    def __init__(self, quant_condition, matrices_per_tick, statistics_per_tick, statistics_max, sleep_between_tick=1):
         self.matrices_per_tick = matrices_per_tick
         self.statistics_per_tick = statistics_per_tick
         self.statistics_max = statistics_max
         self.size = len(self.matrices_per_tick[0])
         self.sleep_between_tick = sleep_between_tick
         self.fig = None
+        self.quant_condition = quant_condition
 
         self.colorscale = [
             [0.00, '#2ecc71'], [0.20, '#2ecc71'],

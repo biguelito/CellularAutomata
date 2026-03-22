@@ -1,20 +1,18 @@
-from cellular_automata.condition import Condition
 from cellular_automata.automata import Automata
 from models.seirsd import SEIRSD
 
 seirsd = SEIRSD()
 seirsd.update_metrics(
     {
-        'alfa': 0.03,
-        'ticks': 365
+        'alfa': 0.06,
+        'ticks': 120
     }
 )
 
-size = 100
+size = 10
 initial_conditions = {
-    Condition.EXPOSED: 10,
-    Condition.INFECTED: 5
+    1: 5
 }
 
-automata = Automata(size, seirsd, initial_conditions)
+automata = Automata(size, seirsd, initial_conditions, 5)
 automata.run()
