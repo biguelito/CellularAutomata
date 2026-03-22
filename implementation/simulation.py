@@ -5,13 +5,13 @@ seirsd = SEIRSD()
 seirsd.update_metrics(
     {
         'alfa': 0.06,
-        'ticks': 120
+        'ticks': 365
     }
 )
 
-size = 10
+size = 100
 initial_conditions = {
-    1: 5
+    1: 20
 }
 
 automata = Automata(size, seirsd, initial_conditions, 5)
