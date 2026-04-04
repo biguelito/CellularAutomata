@@ -11,7 +11,7 @@ seirsd.update_metrics(
 
 size = 100
 initial_conditions = {
-    1: 20
+    2: 20
 }
 
 automata = Automata(size, seirsd, initial_conditions, 5)
