@@ -1,12 +1,52 @@
 import plotly.graph_objects as go
+import time
 
 class Grid:
+    def __init__(self, quant_condition, states, sleep_between_tick=1):
+        self.matrices_per_tick = states.matrices_per_tick
+        self.statistics_per_tick = states.statistics_per_tick
+        self.statistics_max = states.statistics_max
+        self.size = len(self.matrices_per_tick[0])
+        self.sleep_between_tick = sleep_between_tick
+        self.fig = None
+        self.quant_condition = quant_condition
+
+        self.colorscale = [
+            [0.00, '#2ecc71'], [0.20, '#2ecc71'],
+            [0.20, '#f1c40f'], [0.40, '#f1c40f'],
+            [0.40, '#e74c3c'], [0.60, '#e74c3c'],
+            [0.60, '#ffffff'], [0.80, '#ffffff'],
+            [0.80, '#111111'], [1.00, '#111111'],
+        ]
+    
+        fig = go.Figure(data=[go.Heatmap(
+            z=self.matrices_per_tick[0].tolist(),
+            colorscale=self.colorscale,
+            zmin=0,
+            zmax=4,
+            showscale=False,
+        )])
+
+        fig.frames = self.create_frames()
+
+        fig.update_layout(
+            title=dict(text=self.make_title(0), x=0.5, xanchor='center'),
+            updatemenus=self.create_menu(),
+            sliders=self.create_slider(),
+            xaxis=dict(showticklabels=False, showgrid=False),
+            yaxis=dict(showticklabels=False, showgrid=False, scaleanchor='x'),
+            margin=dict(l=20, r=20, t=100, b=80),
+        )
+
+        self.fig = fig
+        return
+    
     def make_title(self, tick_idx):
         stats_tick = self.statistics_per_tick[tick_idx]
         stats_max = self.statistics_max[tick_idx]
         stats_line = ""
         for i in range(self.quant_condition):
-            stats_line += f"{i}: [{stats_tick[i]} - {stats_max[i]}]  "
+            stats_line += f"{i}: [{stats_tick[i]}/{stats_max[i]}]  "
         return f"Simulação SEIRSD - {self.size}*{self.size} indivíduos<br><sub>{stats_line}</sub>"
 
     def create_menu(self):
@@ -74,47 +114,13 @@ class Grid:
 
         return frames
 
-    def show(self, interface):
+    def show(self, filename=None):
         if self.fig == None:
             return
-        
-        self.fig.show(renderer=interface)
 
-    def __init__(self, quant_condition, matrices_per_tick, statistics_per_tick, statistics_max, sleep_between_tick=1):
-        self.matrices_per_tick = matrices_per_tick
-        self.statistics_per_tick = statistics_per_tick
-        self.statistics_max = statistics_max
-        self.size = len(self.matrices_per_tick[0])
-        self.sleep_between_tick = sleep_between_tick
-        self.fig = None
-        self.quant_condition = quant_condition
+        if filename == None:
+            filename = time.time()
 
-        self.colorscale = [
-            [0.00, '#2ecc71'], [0.20, '#2ecc71'],
-            [0.20, '#f1c40f'], [0.40, '#f1c40f'],
-            [0.40, '#e74c3c'], [0.60, '#e74c3c'],
-            [0.60, '#ffffff'], [0.80, '#ffffff'],
-            [0.80, '#111111'], [1.00, '#111111'],
-        ]
-    
-        fig = go.Figure(data=[go.Heatmap(
-            z=self.matrices_per_tick[0].tolist(),
-            colorscale=self.colorscale,
-            zmin=0,
-            zmax=4,
-            showscale=False,
-        )])
-
-        fig.frames = self.create_frames()
-
-        fig.update_layout(
-            title=dict(text=self.make_title(0), x=0.5, xanchor='center'),
-            updatemenus=self.create_menu(),
-            sliders=self.create_slider(),
-            xaxis=dict(showticklabels=False, showgrid=False),
-            yaxis=dict(showticklabels=False, showgrid=False, scaleanchor='x'),
-            margin=dict(l=20, r=20, t=100, b=80),
-        )
-
-        self.fig = fig
+        self.fig.write_html(f"figures/{filename}.html")
+        # self.fig.write_image(f"figures/{filename}.jpg")
         return

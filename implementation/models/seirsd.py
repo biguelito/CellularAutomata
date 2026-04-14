@@ -12,11 +12,12 @@ class SEIRSD:
             "beta": 0.4332,
             "sigma": 0.192,
             "gamma": 0.141,
-            "alfa": 0.03,
+            "alfa": 0.0056,
             "mu": 0.0014,
             "r0": 3,
             "ticks": 365,
-            "size": 100
+            "size": 100,
+            "quant_condition": 5
         }
         self.calculate_indices()
         self.conditions_effect = [
@@ -35,9 +36,6 @@ class SEIRSD:
 
     def get_metrics(self, key):
         return self.metrics[key]
-
-    def get_ticks(self):
-        return self.metrics['ticks']
 
     def set_metrics(self, key, value):
         self.metrics[key] = value
