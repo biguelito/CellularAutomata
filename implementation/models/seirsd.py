@@ -3,7 +3,6 @@ from math import ceil
 
 class SEIRSD:
     def __init__(self):
-        self.conditions = ["Susceptíveis", "Expostos", "Infectados", "Recuperados", "Mortos"]
         self.metrics = {
             "E": 10,
             "I": 5,
@@ -12,11 +11,12 @@ class SEIRSD:
             "beta": 0.4332,
             "sigma": 0.192,
             "gamma": 0.141,
-            "alfa": 0.03,
+            "alfa": 0.0056,
             "mu": 0.0014,
             "r0": 3,
             "ticks": 365,
-            "size": 100
+            "size": 100,
+            "quant_condition": 5
         }
         self.calculate_indices()
         self.conditions_effect = [
