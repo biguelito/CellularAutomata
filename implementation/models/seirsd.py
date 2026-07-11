@@ -47,7 +47,7 @@ class SEIRSD:
             self.set_metrics(key, value)
         self.calculate_indices()
     
-    def progress(self, cell, size, i, j, matrix):
+    def check(self, cell, size, i, j, matrix):
         condition_old = cell.get_condition()
         if (condition_old == 4):
             return
@@ -63,27 +63,30 @@ class SEIRSD:
         if infected_neighbors > 0:
             prob_infection = 1 - ((1 - self.beta)**infected_neighbors)
             if (np.random.rand() < prob_infection):
-                cell.set_condition(1)
+                cell.mark_condition(1)
         return
 
     def exposed_cell(self, cell, size=0, i=0, j=0, matrix=None):
         cell.increase_ticks_in_condition(1)
         if (cell.days_in_condition[1] == self.days_to_infection):
-            cell.set_condition(2)
+            cell.mark_condition(2)
         return
 
     def infected_cell(self, cell, siz=0, i=0, j=0, matrix=None):
         cell.increase_ticks_in_condition(2)
         if (np.random.rand() < self.probability_die):
-            cell.set_condition(4)
+            cell.mark_condition(4)
             return
         
         if (cell.days_in_condition[2] == self.days_to_recover):
-            cell.set_condition(3)
+            cell.mark_condition(3)
         return
 
     def recovered_cell(self, cell, size=0, i=0, j=0, matrix=None):
         cell.increase_ticks_in_condition(3)
         if (cell.days_in_condition[3] == self.days_to_lose_immunity):
-            cell.set_condition(0)
+            cell.mark_condition(0)
         return
+    
+    def progress_marked(self, cell):
+        cell.set_condition_marked()

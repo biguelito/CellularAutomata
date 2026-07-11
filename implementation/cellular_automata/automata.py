@@ -1,10 +1,8 @@
 import numpy as np
-from time import sleep
 
 from cellular_automata.states import States
 from cellular_automata.cell import Cell
 from cellular_automata.grid import Grid
-from models.seirsd import SEIRSD
 
 class Automata:
     def __init__(self, model : object):
@@ -35,9 +33,9 @@ class Automata:
         self.states.decrease_max_initial_condition(quantity)
         return
 
-    def progress_condition(self, cell, i, j):
+    def check_condition(self, cell, i, j):
         condition_old = cell.get_condition()
-        self.model.progress(cell, self.size, i, j, self.matrix)
+        self.model.check(cell, self.size, i, j, self.matrix)
 
         condition_new = cell.get_condition()
         if (condition_old != condition_new):
@@ -47,7 +45,11 @@ class Automata:
     def tick(self):
         for i in range(self.size):
             for j in range(self.size):
-                self.progress_condition(self.matrix[i, j], i, j)
+                self.check_condition(self.matrix[i, j], i, j)
+        
+        for i in range(self.size):
+            for j in range(self.size):
+                self.model.progress_marked(self.matrix[i, j])
         return
 
     def create_visualization(self, ticks, sleep_between_tick):

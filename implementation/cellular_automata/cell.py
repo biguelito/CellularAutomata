@@ -1,6 +1,7 @@
 class Cell:
     def __init__(self, quant_condition):
         self.condition = 0
+        self.marked_condition = 0
         self.quant_condition = quant_condition
         self.reset_days_count()
 
@@ -13,6 +14,13 @@ class Cell:
     def set_condition(self, condition):
         self.reset_days_count()
         self.condition = condition
+
+    def set_condition_marked(self):
+        self.condition = self.marked_condition
+
+    def mark_condition(self, condition):
+        self.reset_days_count()
+        self.marked_condition = condition
 
     def increase_ticks_in_condition(self, condition):
         self.days_in_condition[condition] += 1
