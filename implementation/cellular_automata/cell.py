@@ -11,9 +11,13 @@ class Cell:
     def get_condition(self):
         return self.condition
 
+    def get_marked_condition(self):
+        return self.marked_condition
+
     def set_condition(self, condition):
         self.reset_days_count()
         self.condition = condition
+        self.marked_condition = condition
 
     def set_condition_marked(self):
         self.condition = self.marked_condition

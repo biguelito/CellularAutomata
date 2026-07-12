@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 import time
+from pathlib import Path
 
 class Grid:
     def __init__(self, quant_condition, states, sleep_between_tick=1):
@@ -121,6 +122,8 @@ class Grid:
         if filename == None:
             filename = time.time()
 
-        self.fig.write_html(f"figures/{filename}.html")
+        output_dir = Path(__file__).resolve().parent.parent / "figures"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        self.fig.write_html(output_dir / f"{filename}.html")
         # self.fig.write_image(f"figures/{filename}.jpg")
         return

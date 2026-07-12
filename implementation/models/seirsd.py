@@ -42,7 +42,7 @@ class SEIRSD:
 
     def update_metrics(self, new_metrics : dict):
         for key, value in new_metrics.items():
-            if key not in new_metrics.keys():
+            if key not in self.metrics.keys():
                 continue
             self.set_metrics(key, value)
         self.calculate_indices()

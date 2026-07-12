@@ -23,10 +23,16 @@ class Automata:
         return
 
     def initialize_condition_random(self, quantity, condition):
-        total_population = self.matrix.size
-        flat_indices = np.random.choice(total_population, quantity, replace=False)
-        indices = np.unravel_index(flat_indices, (len(self.matrix), len(self.matrix)))
-        for row, column in zip(indices[0], indices[1]):
+        available_indices = [
+            (row, column)
+            for row in range(self.size)
+            for column in range(self.size)
+            if self.matrix[row, column].get_condition() == 0
+        ]
+
+        chosen_indices = np.random.choice(len(available_indices), quantity, replace=False)
+        for index in chosen_indices:
+            row, column = available_indices[index]
             self.matrix[row, column].set_condition(condition)
 
         self.states.update_count(0, condition, -quantity, quantity)
@@ -37,7 +43,7 @@ class Automata:
         condition_old = cell.get_condition()
         self.model.check(cell, self.size, i, j, self.matrix)
 
-        condition_new = cell.get_condition()
+        condition_new = cell.get_marked_condition()
         if (condition_old != condition_new):
             self.states.update_count(condition_old, condition_new)
         return
@@ -61,7 +67,8 @@ class Automata:
         return Grid(self.quant_condition, self.states, sleep_between_tick)
 
     def run(self, ticks=0, sleep_between_tick=1, filename=None):
-        ticks = self.model.get_metrics("ticks")
+        if ticks <= 0:
+            ticks = self.model.get_metrics("ticks")
         grid = self.create_visualization(ticks, sleep_between_tick)
         grid.show(filename)
         return
