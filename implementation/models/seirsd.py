@@ -2,7 +2,7 @@ import numpy as np
 from math import ceil
 
 class SEIRSD:
-    def __init__(self):
+    def __init__(self, size=100):
         self.conditions = ["Susceptíveis", "Expostos", "Infectados", "Recuperados", "Mortos"]
         self.metrics = {
             "E": 10,
@@ -16,7 +16,7 @@ class SEIRSD:
             "mu": 0.0014,
             "r0": 3,
             "ticks": 365,
-            "size": 100,
+            "size": size,
             "quant_condition": 5
         }
         self.calculate_indices()

@@ -1,0 +1,7 @@
+Condicao,Compartimento,Valor maximo,Valor final
+0,Susceptíveis,9980,3169
+1,Expostos,1456,133
+2,Infectados,1763,184
+3,Recuperados,7972,6338
+4,Mortos,174,174
+

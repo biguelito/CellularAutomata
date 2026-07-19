@@ -70,5 +70,5 @@ class Automata:
         if ticks <= 0:
             ticks = self.model.get_metrics("ticks")
         grid = self.create_visualization(ticks, sleep_between_tick)
-        grid.show(filename)
+        grid.save(filename)
         return

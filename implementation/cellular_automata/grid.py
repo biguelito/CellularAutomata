@@ -1,3 +1,4 @@
+import json
 import plotly.graph_objects as go
 import time
 from pathlib import Path
@@ -7,6 +8,7 @@ class Grid:
         self.matrices_per_tick = states.matrices_per_tick
         self.statistics_per_tick = states.statistics_per_tick
         self.statistics_max = states.statistics_max
+        self.conditions_max = states.conditions_max
         self.size = len(self.matrices_per_tick[0])
         self.sleep_between_tick = sleep_between_tick
         self.fig = None
@@ -115,7 +117,18 @@ class Grid:
 
         return frames
 
-    def show(self, filename=None):
+    def make_metrics_payload(self):
+        return {
+            "size": self.size,
+            "quant_condition": self.quant_condition,
+            "sleep_between_tick": self.sleep_between_tick,
+            "ticks_recorded": len(self.statistics_per_tick),
+            "conditions_max": self.conditions_max,
+            "statistics_per_tick": self.statistics_per_tick,
+            # "matrices_per_tick": [matrix.tolist() for matrix in self.matrices_per_tick],
+        }
+
+    def save(self, filename=None):
         if self.fig == None:
             return
 
@@ -125,5 +138,6 @@ class Grid:
         output_dir = Path(__file__).resolve().parent.parent / "figures"
         output_dir.mkdir(parents=True, exist_ok=True)
         self.fig.write_html(output_dir / f"{filename}.html")
-        # self.fig.write_image(f"figures/{filename}.jpg")
+        with open(output_dir / f"{filename}.json", "w", encoding="utf-8") as metrics_file:
+            json.dump(self.make_metrics_payload(), metrics_file, indent=4)
         return
