@@ -43,6 +43,9 @@ O estudo realizado busca entender quais adaptações são necessárias para conv
 ## Instalação e utilização
 
 ### Localmente
+```
+Caso o comando "python3" não funcione, experimente somente "python"
+```
 
 1. **Configuração do ambiente**: Para garantir que o python que irá rodar o projeto possui todas as dependencias necessarias, é possivel criar um ambiente virtual e instalar nele as libs necessárias. Essas estão listadas no `requirements.txt`.
 
@@ -64,6 +67,13 @@ O estudo realizado busca entender quais adaptações são necessárias para conv
     ```bash
     pip3 install -r requirements.txt
     ```
+
+3. **Execução**: Para executar localmente, basta rodar o comando
+    ```bash
+    python3 simulation.py
+    ```
+
+4. **Resultado**: Os resultados serão salvos na pasta `figures`
 ---
 
 **Licença:** Este projeto é distribuído sob a Licença MIT.
