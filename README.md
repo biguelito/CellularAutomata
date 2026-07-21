@@ -34,6 +34,19 @@ $$
 \frac{dD}{dt} = \mu \cdot I
 $$
 
+### O autômato
+
+O autômato implementado possui 5 estados para cada célula, sendo eles identificados por números e cada número representa um compartimento do modelo compartimental. Para visualizaççao do autômato, cada estado possui uma cor. A representação do autômato segue a seguinte tabela
+
+| número | compartimento | cor      |
+|--------|---------------|----------|
+| 0      | Suscetiveis   | Verde    |
+| 1      | Expostos      | Amarelo  |
+| 2      | Infectados    | Vermelho |
+| 3      | Recuperados   | Branco   |
+| 4      | Mortos        | Preto    |
+
+<iframe src="figures/1784601145.5803924.html" width="100%" height="500px"></iframe>
 
 ### O estudo
 
