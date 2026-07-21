@@ -1,4 +1,4 @@
-# Impactos da perda de imunidade na mortalidade. Uma análise com modelo compartimental
+# Tradução de um modelo compartimental em autômato celular
 
 [![📄 Scientific Report](https://img.shields.io/badge/📄_Scientific_Report-PDF-blue?style=for-the-badge)](https://github.com/biguelito/CellularAutomata/blob/main/paper/Automato_de_modelo_compartimental.pdf)
 
