@@ -46,7 +46,7 @@ O autômato implementado possui 5 estados para cada célula, sendo eles identifi
 | 3      | Recuperados   | Branco   |
 | 4      | Mortos        | Preto    |
 
-<iframe src="figures/1784601145.5803924.html" width="100%" height="500px"></iframe>
+![Automato](figures/exemplo_automato.png)
 
 ### O estudo
 
