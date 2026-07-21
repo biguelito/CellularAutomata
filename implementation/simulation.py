@@ -1,16 +1,15 @@
 import json
 from pathlib import Path
-
 import numpy as np
+np.random.seed(42)
 
 from cellular_automata.automata import Automata
 from models.seirsd import SEIRSD
 
 
 class Simulation:
-    def __init__(self, size=100, runs=10, initial_conditions=None):
+    def __init__(self, size=100, initial_conditions=None):
         self.model = SEIRSD(size)
-        self.runs = runs
         self.initial_conditions = initial_conditions or {2: 20}
         self.figures_dir = Path(__file__).resolve().parent / "figures"
 
@@ -19,8 +18,8 @@ class Simulation:
         automata.create_random_population(self.initial_conditions)
         automata.run(ticks=ticks, sleep_between_tick=sleep_between_tick, filename=filename)
 
-    def run_many(self, ticks=0, sleep_between_tick=1):
-        for _ in range(self.runs):
+    def run(self, runs=1, ticks=0, sleep_between_tick=1):
+        for _ in range(runs):
             self.run_once(ticks=ticks, sleep_between_tick=sleep_between_tick)
 
     def get_metrics_files(self):
@@ -33,7 +32,7 @@ class Simulation:
         if not metrics_files:
             return {
                 "total_files": 0,
-                "files": [],
+                # "files": [],
                 "conditions": {},
             }
 
@@ -54,7 +53,7 @@ class Simulation:
         if not conditions_max_per_file:
             return {
                 "total_files": 0,
-                "files": [],
+                # "files": [],
                 "conditions": {},
             }
 
@@ -72,8 +71,8 @@ class Simulation:
                 "mean": float(np.mean(values)),
                 "min": float(np.min(values)),
                 "max": float(np.max(values)),
-                "std": float(np.std(values)),
-                "last": values.tolist()[-1]
+                "std": round(float(np.std(values)), 4),
+                "cv": round((float(np.std(values))/float(np.mean(values))) * 100, 4)
             }
 
         output_path = self.figures_dir / output_filename
@@ -82,8 +81,11 @@ class Simulation:
 
         return summary
 
-
-if __name__ == "__main__":
+def run_simulation(runs):
     simulation = Simulation()
-    simulation.run_many()
-    simulation.summarize_conditions_max()
+    simulation.run(runs=runs)
+    if (runs > 1):
+        simulation.summarize_conditions_max()
+
+if __name__ == "__main__":    
+    run_simulation(1)
